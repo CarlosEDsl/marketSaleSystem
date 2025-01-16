@@ -11,7 +11,7 @@ import javax.sql.DataSource;
 public class DatabaseConfig {
 
     @Bean
-    public DataSource dataSource() {
+    public static DataSource dataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
         dataSource.setUrl("jdbc:mysql://localhost:3306/seu_banco_de_dados");
@@ -21,7 +21,11 @@ public class DatabaseConfig {
     }
 
     @Bean
-    public JdbcTemplate jdbcTemplate(DataSource dataSource) {
+    public static JdbcTemplate jdbcTemplate(DataSource dataSource) {
         return new JdbcTemplate(dataSource);
+    }
+
+    public static JdbcTemplate getJdbcTemplate() {
+        return jdbcTemplate(dataSource());
     }
 }

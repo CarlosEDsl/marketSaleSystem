@@ -1,5 +1,6 @@
 package com.eduardo.carlos.market.dao;
 
+import com.eduardo.carlos.market.configs.DatabaseConfig;
 import com.eduardo.carlos.market.models.Product;
 import com.eduardo.carlos.market.models.Sale;
 import com.eduardo.carlos.market.models.SaleItem;
@@ -12,8 +13,8 @@ import java.util.List;
 
 public class SaleDAO {
 
+    private static SaleDAO instance;
     private final JdbcTemplate jdbcTemplate;
-
     private static final RowMapper<Sale> SALE_ROW_MAPPER = (rs, rowNum) -> {
         return new Sale(
                 rs.getLong("id"),
@@ -23,8 +24,16 @@ public class SaleDAO {
         );
     };
 
-    public SaleDAO(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public static synchronized SaleDAO getInstance() {
+        if (instance == null) {
+            instance = new SaleDAO();
+        }
+        return instance;
+    }
+
+
+    private SaleDAO() {
+        this.jdbcTemplate = DatabaseConfig.getJdbcTemplate();
     }
 
     public List<Sale> getAllSales() {
