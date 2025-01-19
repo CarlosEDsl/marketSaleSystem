@@ -9,12 +9,10 @@ import java.util.List;
 public class SaleDTO {
 
     private Date date;
-    private Double totalAmount;
     private List<SaleItemDTO> items;
 
-    public SaleDTO(Date date, Double totalAmount, List<SaleItemDTO> items) {
+    public SaleDTO(Date date, List<SaleItemDTO> items) {
         this.date = date;
-        this.totalAmount = totalAmount;
         this.items = items;
     }
 
@@ -24,14 +22,6 @@ public class SaleDTO {
 
     public void setDate(Date date) {
         this.date = date;
-    }
-
-    public Double getTotalAmount() {
-        return totalAmount;
-    }
-
-    public void setTotalAmount(Double totalAmount) {
-        this.totalAmount = totalAmount;
     }
 
     public List<SaleItemDTO> getItems() {

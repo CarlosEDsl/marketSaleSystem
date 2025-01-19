@@ -6,9 +6,12 @@ import com.eduardo.carlos.market.models.Sale;
 import com.eduardo.carlos.market.models.SaleItem;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.List;
 
 public class SaleDAO {
@@ -19,7 +22,7 @@ public class SaleDAO {
         return new Sale(
                 rs.getLong("id"),
                 rs.getDate("date"),
-                rs.getDouble("total_amount"),
+                rs.getDouble("totalAmount"),
                 null
         );
     };
@@ -37,12 +40,18 @@ public class SaleDAO {
     }
 
     public List<Sale> getAllSales() {
-        String sql = "SELECT * FROM sales";
-        return jdbcTemplate.query(sql, SALE_ROW_MAPPER);
+        String sql = "SELECT * FROM sale";
+        List<Sale> sales = jdbcTemplate.query(sql, SALE_ROW_MAPPER);
+
+        for(Sale sale : sales){
+            sale.setItems(this.getSaleItemsBySaleId(sale.getId()));
+        }
+
+        return sales;
     }
 
     public Sale getSaleById(Long id) {
-        String sql = "SELECT * FROM sales WHERE id = ?";
+        String sql = "SELECT * FROM sale WHERE id = ?";
         Sale sale = jdbcTemplate.queryForObject(sql, SALE_ROW_MAPPER, id);
 
         List<SaleItem> items = getSaleItemsBySaleId(id);
@@ -51,20 +60,33 @@ public class SaleDAO {
         return sale;
     }
 
-    public int createSale(Sale sale) {
-        String sql = "INSERT INTO sales (date, total_amount) VALUES (?, ?)";
-        int rows = jdbcTemplate.update(sql, sale.getDate(), sale.getTotalAmount());
+    @Transactional
+    public long createSale(Sale sale) {
+        String sql = "INSERT INTO sale (date, totalAmount) VALUES (?, ?)";
 
-        Long saleId = jdbcTemplate.queryForObject("SELECT LAST_INSERT_ID()", Long.class);
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setDate(1, new java.sql.Date(sale.getDate().getTime())); // Converte java.util.Date para SQL Date
+            ps.setDouble(2, sale.getTotalAmount());
+            return ps;
+        }, keyHolder);
+
+        Long saleId = keyHolder.getKey().longValue();
 
         for (SaleItem item : sale.getItems()) {
             createSaleItem(saleId, item);
         }
-        return rows;
+
+        return saleId;
     }
 
+    @Transactional
     public void createSaleItem(Long saleId, SaleItem item) {
-        String sql = "INSERT INTO sale_items (sale_id, product_id, quantity, price) VALUES (?, ?, ?, ?)";
+        System.out.println(saleId);
+        System.out.println(item.getProductId());
+        String sql = "INSERT INTO sale_items (sale_id, product_id, amount, price) VALUES (?, ?, ?, ?)";
         jdbcTemplate.update(sql, saleId, item.getProductId(), item.getAmount(), item.getPrice());
     }
 
@@ -98,7 +120,7 @@ public class SaleDAO {
         String deleteItemsSql = "DELETE FROM sale_items WHERE sale_id = ?";
         jdbcTemplate.update(deleteItemsSql, id);
 
-        String deleteSaleSql = "DELETE FROM sales WHERE id = ?";
+        String deleteSaleSql = "DELETE FROM sale WHERE id = ?";
         return jdbcTemplate.update(deleteSaleSql, id);
     }
 }

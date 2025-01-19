@@ -14,7 +14,7 @@ public class DatabaseConfig {
     public static DataSource dataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
-        dataSource.setUrl("jdbc:mysql://localhost:3306/seu_banco_de_dados");
+        dataSource.setUrl("jdbc:mysql://localhost:3306/Market");
         dataSource.setUsername("root");
         dataSource.setPassword("root");
         return dataSource;

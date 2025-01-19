@@ -1,10 +1,12 @@
 package com.eduardo.carlos.market.services;
 
 import com.eduardo.carlos.market.dao.ProductDAO;
+import com.eduardo.carlos.market.exceptions.NotFoundException;
 import com.eduardo.carlos.market.models.DTOs.ObjectDeletedDTO;
 import com.eduardo.carlos.market.models.DTOs.ProductDTO;
 import com.eduardo.carlos.market.models.DTOs.UpdateProductDTO;
 import com.eduardo.carlos.market.models.Product;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,7 +24,7 @@ public class ProductService {
         try{
             return this.productDAO.getAllProducts();
         } catch(Exception e) {
-            throw new RuntimeException(e);
+            throw new NotFoundException(e.getMessage(), HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value());
         }
     }
 
@@ -32,7 +34,7 @@ public class ProductService {
             return new ProductDTO(product.getName(), product.getDescription(),product.getPrice(),
                     product.getStockQuantity());
         } catch(Exception e) {
-            throw new RuntimeException(e);
+            throw new NotFoundException(e.getMessage(), HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value());
         }
     }
 
@@ -71,7 +73,7 @@ public class ProductService {
 
             return new ObjectDeletedDTO(product);
         } catch(Exception e) {
-            throw new RuntimeException(e);
+            throw new NotFoundException(e.getMessage(), HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value());
         }
 
     }

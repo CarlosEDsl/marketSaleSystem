@@ -49,5 +49,14 @@ public class Sale {
         this.items = items;
     }
 
+    @Override
+    public String toString() {
+        return "Sale{" +
+                "id=" + id +
+                ", date=" + date +
+                ", totalAmount=" + totalAmount +
+                ", items=" + items.toString() +
+                '}';
+    }
 }
 

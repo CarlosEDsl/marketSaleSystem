@@ -49,5 +49,15 @@ public class SaleItem {
     public Long getProductId() {
         return this.product.getId();
     }
+
+    @Override
+    public String toString() {
+        return "SaleItem{" +
+                "id=" + id +
+                ", product=" + product.toString() +
+                ", amount=" + amount +
+                ", price=" + price +
+                '}';
+    }
 }
 

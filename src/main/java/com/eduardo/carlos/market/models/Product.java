@@ -55,4 +55,15 @@ public class Product {
     public void setStockQuantity(Integer stockQuantity) {
         this.stockQuantity = stockQuantity;
     }
+
+    @Override
+    public String toString() {
+        return "Product{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", price=" + price +
+                ", stockQuantity=" + stockQuantity +
+                '}';
+    }
 }
