@@ -1,6 +1,7 @@
 package com.eduardo.carlos.market.services;
 
 import com.eduardo.carlos.market.dao.ProductDAO;
+import com.eduardo.carlos.market.exceptions.NotAcceptedValueException;
 import com.eduardo.carlos.market.exceptions.NotFoundException;
 import com.eduardo.carlos.market.models.DTOs.ObjectDeletedDTO;
 import com.eduardo.carlos.market.models.DTOs.ProductDTO;
@@ -43,6 +44,10 @@ public class ProductService {
             Product product = new Product(0L, productDTO.getName(), productDTO.getDescription(),
                     productDTO.getPrice(), productDTO.getStockQuantity());
 
+            if(product.getPrice() <= 0) {
+                throw new NotAcceptedValueException("O valor minimo para produtos é 1$");
+            }
+
             int id = productDAO.createProduct(product);
             return id;
         } catch (Exception e) {
@@ -50,13 +55,18 @@ public class ProductService {
         }
     }
 
-    public Product updateProduct(UpdateProductDTO productDTO) {
+    public Product updateProduct(ProductDTO productDTO, Long id) {
         try{
-            Product product = this.productDAO.getProductById(productDTO.getId());
+            Product product = this.productDAO.getProductById(id);
+
+            if(product.getPrice() <= 0) {
+                throw new NotAcceptedValueException("O valor minimo para produtos é 1$");
+            }
 
             product.setDescription(productDTO.getDescription());
             product.setPrice(productDTO.getPrice());
             product.setStockQuantity(productDTO.getStockQuantity());
+            product.setName(productDTO.getName());
 
             this.productDAO.updateProduct(product);
 

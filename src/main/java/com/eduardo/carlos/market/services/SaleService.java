@@ -2,6 +2,7 @@ package com.eduardo.carlos.market.services;
 
 import com.eduardo.carlos.market.dao.ProductDAO;
 import com.eduardo.carlos.market.dao.SaleDAO;
+import com.eduardo.carlos.market.exceptions.NotAcceptedValueException;
 import com.eduardo.carlos.market.exceptions.NotFoundException;
 import com.eduardo.carlos.market.models.DTOs.ObjectDeletedDTO;
 import com.eduardo.carlos.market.models.DTOs.SaleDTO;
@@ -43,11 +44,15 @@ public class SaleService {
     }
 
     public Long createSale(SaleDTO saleDTO) {
+
         int itemsListSize = saleDTO.getItems().size();
         double totalAmount = 0;
 
         List<SaleItem> saleItems = new ArrayList<SaleItem>(itemsListSize);
         for(int i = 0; i < itemsListSize; i++) {
+            if(saleDTO.getItems().get(i).getAmount() < 0){
+                throw new NotAcceptedValueException("A quantidade minima por item é 1");
+            }
             SaleItemDTO itemDTO = saleDTO.getItems().get(i);
             SaleItem saleItem = this.itemFromDTO(itemDTO);
             this.getAmountItemsOutOfStock(saleItem.getAmount(), saleItem.getProduct());
@@ -67,9 +72,9 @@ public class SaleService {
     public SaleItem itemFromDTO(SaleItemDTO saleItemDTO) {
         try {
             Product product = this.productDAO.getProductById(saleItemDTO.getProduct_id());
+            Double productPrice = product.getPrice();
 
-            SaleItem saleItem = new SaleItem(0L, product, saleItemDTO.getAmount(), saleItemDTO.getPrice());
-            return saleItem;
+            return new SaleItem(0L, product, saleItemDTO.getAmount(), productPrice);
         }catch (Exception e) {
             throw new NotFoundException("Product not found", HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value());
         }
@@ -79,7 +84,7 @@ public class SaleService {
         Integer stockAmount = product.getStockQuantity();
 
         if ((stockAmount - amountOff) < 0) {
-            throw new NotFoundException("Estoque insuficiente", HttpStatus.NOT_ACCEPTABLE, HttpStatus.NOT_ACCEPTABLE.value());
+            throw new NotAcceptedValueException("Não existem itens suficientes no estoque do item: " + product.getName());
         }
 
         product.setStockQuantity(stockAmount - amountOff);

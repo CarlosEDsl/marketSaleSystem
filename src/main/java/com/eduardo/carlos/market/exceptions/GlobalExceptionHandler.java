@@ -29,4 +29,15 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler(NotAcceptedValueException.class)
+    public ResponseEntity<ErrorResponse> handleNotAccepted(NotAcceptedValueException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                ex.getMessage(),
+                ex.getHttpStatus(),
+                ex.getStatus()
+        );
+
+        return new ResponseEntity<>(errorResponse, errorResponse.getHttpStatus());
+    }
+
 }
