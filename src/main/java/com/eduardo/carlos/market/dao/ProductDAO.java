@@ -9,17 +9,26 @@ import java.util.List;
 
 public class ProductDAO {
 
-    private final JdbcTemplate jdbcTemplate;
     private static ProductDAO instance;
-    private static final RowMapper<Product> PRODUCT_ROW_MAPPER = (rs, rowNum) -> {
-        return new Product(
-                rs.getLong("id"),
-                rs.getString("name"),
-                rs.getString("description"),
-                rs.getDouble("price"),
-                rs.getInt("stock_quantity")
-        );
-    };
+    private final JdbcTemplate jdbcTemplate;
+
+    private static final String CREATE_TABLE_SQL = """
+        CREATE TABLE IF NOT EXISTS products (
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            description TEXT,
+            price DOUBLE NOT NULL,
+            stock_quantity INT NOT NULL
+        )
+    """;
+
+    private static final RowMapper<Product> PRODUCT_ROW_MAPPER = (rs, rowNum) -> new Product(
+            rs.getLong("id"),
+            rs.getString("name"),
+            rs.getString("description"),
+            rs.getDouble("price"),
+            rs.getInt("stock_quantity")
+    );
 
     public static synchronized ProductDAO getInstance() {
         if (instance == null) {
@@ -30,6 +39,8 @@ public class ProductDAO {
 
     private ProductDAO() {
         this.jdbcTemplate = DatabaseConfig.getJdbcTemplate();
+
+        this.jdbcTemplate.execute(CREATE_TABLE_SQL);
     }
 
     public List<Product> getAllProducts() {

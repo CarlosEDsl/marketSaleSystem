@@ -18,14 +18,33 @@ public class SaleDAO {
 
     private static SaleDAO instance;
     private final JdbcTemplate jdbcTemplate;
-    private static final RowMapper<Sale> SALE_ROW_MAPPER = (rs, rowNum) -> {
-        return new Sale(
-                rs.getLong("id"),
-                rs.getDate("date"),
-                rs.getDouble("totalAmount"),
-                null
-        );
-    };
+
+    private static final String CREATE_SALE_TABLE_SQL = """
+        CREATE TABLE IF NOT EXISTS sale (
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            date DATE NOT NULL,
+            totalAmount DOUBLE NOT NULL
+        )
+        """;
+
+    private static final String CREATE_SALE_ITEMS_TABLE_SQL = """
+        CREATE TABLE IF NOT EXISTS sale_items (
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            sale_id BIGINT NOT NULL,
+            product_id BIGINT NOT NULL,
+            amount INT NOT NULL,
+            price DOUBLE NOT NULL,
+            FOREIGN KEY (sale_id) REFERENCES sale (id) ON DELETE CASCADE,
+            FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE
+        )
+        """;
+
+    private static final RowMapper<Sale> SALE_ROW_MAPPER = (rs, rowNum) -> new Sale(
+            rs.getLong("id"),
+            rs.getDate("date"),
+            rs.getDouble("totalAmount"),
+            null
+    );
 
     public static synchronized SaleDAO getInstance() {
         if (instance == null) {
@@ -34,9 +53,11 @@ public class SaleDAO {
         return instance;
     }
 
-
     private SaleDAO() {
         this.jdbcTemplate = DatabaseConfig.getJdbcTemplate();
+
+        this.jdbcTemplate.execute(CREATE_SALE_TABLE_SQL);
+        this.jdbcTemplate.execute(CREATE_SALE_ITEMS_TABLE_SQL);
     }
 
     public List<Sale> getAllSales() {
